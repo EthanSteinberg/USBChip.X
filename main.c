@@ -361,12 +361,30 @@ typedef union _INTPUT_CONTROLS_TYPEDEF
     BYTE val[7];
 } INPUT_CONTROLS;
 
+typedef union _OUTPUT_DATA
+{
+    
+
+    BYTE val;
+    
+
+    struct
+    {
+        BYTE firstBit: 1;
+        BYTE :7; //Filler
+    } members;
+} OUTPUT_DATA;
+
 /** VARIABLES ******************************************************/
 #if defined(__18CXX)
 #pragma udata
 #endif
 BYTE old_sw2,old_sw3;
 USB_HANDLE lastTransmission;
+USB_HANDLE lastRecieve;
+
+BYTE wasGiven = 0;
+BYTE lol = 0;
 
 #if defined(__18CXX)
     #pragma udata
@@ -422,6 +440,7 @@ USB_HANDLE lastTransmission;
 #endif
 
 INPUT_CONTROLS joystick_input INPUT_CONTROLS_ADDRESS_TAG;
+OUTPUT_DATA joystick_output;
 BYTE hid_report[8] HID_REPORT_ADDRESS_TAG;
 
 #if defined(__18CXX)
@@ -965,6 +984,17 @@ unsigned char getAnalogValue(void)
 
 void Joystick(void)
 {
+
+
+    if (!HIDRxHandleBusy(lastRecieve))
+    {
+        wasGiven = joystick_output.val;
+        lol = !lol;
+        lastRecieve = HIDRxPacket(HID_EP, (BYTE*)&joystick_output, sizeof(joystick_output));
+
+    }
+
+
     //If the last transmision is complete
     if(!HIDTxHandleBusy(lastTransmission))
     {
@@ -973,7 +1003,7 @@ void Joystick(void)
         {
             //Indicate that the "x" button is pressed, but none others
             joystick_input.members.buttons.x = 1;
-            joystick_input.members.buttons.square = 0;
+            joystick_input.members.buttons.square = lol;
             joystick_input.members.buttons.o = 0;
             joystick_input.members.buttons.triangle = 0;
             joystick_input.members.buttons.L1 = 0;
@@ -992,7 +1022,7 @@ void Joystick(void)
             //Move the X and Y coordinates to the their extreme values (0x80 is
             //  in the middle - no value).
             joystick_input.members.analog_stick.X = getAnalogValue();
-            joystick_input.members.analog_stick.Y = 0;
+            joystick_input.members.analog_stick.Y = wasGiven;
 
            	//Send the packet over USB to the host.
            	lastTransmission = HIDTxPacket(HID_EP, (BYTE*)&joystick_input, sizeof(joystick_input));
@@ -1533,6 +1563,8 @@ void USBCBInitEP(void)
 {
     //enable the HID endpoint
     USBEnableEndpoint(HID_EP,USB_OUT_ENABLED|USB_IN_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
+
+    lastRecieve = HIDRxPacket(HID_EP, (BYTE*)&joystick_output, sizeof(joystick_output));
 }
 
 /********************************************************************
