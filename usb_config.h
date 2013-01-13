@@ -98,8 +98,8 @@
 #define USB_SPEED_OPTION USB_FULL_SPEED
 //#define USB_SPEED_OPTION USB_LOW_SPEED //(not valid option for PIC24F devices)
 
-#define MY_VID 0x04D8
-#define MY_PID 0x005E
+#define MY_VID 0x24D8
+#define MY_PID 0x02AE
 
 //------------------------------------------------------------------------------------------------------------------
 //Option to enable auto-arming of the status stage of control transfers, if no

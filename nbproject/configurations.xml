@@ -115,29 +115,6 @@
         <property key="stack-analysis-mcc18" value="false"/>
         <property key="stack-analysis-mplink" value="false"/>
       </C18LanguageToolchain>
-      <HI-TECH-COMP>
-        <property key="define-macros" value=""/>
-        <property key="extra-include-directories"
-                  value="C:\Microchip Solutions v2012-10-15\Microchip\Include;C:\Users\ethan_000\MPLABXProjects\USBChip.X"/>
-        <property key="identifier-length" value="255"/>
-        <property key="operation-mode" value="free"/>
-        <property key="opt-xc8-compiler-strict_ansi" value="false"/>
-        <property key="optimization-assembler" value="true"/>
-        <property key="optimization-assembler-files" value="false"/>
-        <property key="optimization-debug" value="false"/>
-        <property key="optimization-global" value="true"/>
-        <property key="optimization-level" value="9"/>
-        <property key="optimization-set" value="default"/>
-        <property key="optimization-speed" value="true"/>
-        <property key="preprocess-assembler" value="true"/>
-        <property key="undefine-macros" value=""/>
-        <property key="use-cci" value="false"/>
-        <property key="verbose" value="false"/>
-        <property key="warning-level" value="0"/>
-        <property key="what-to-do" value="ignore"/>
-      </HI-TECH-COMP>
-      <HI-TECH-LINK>
-      </HI-TECH-LINK>
       <PICkit3PlatformTool>
         <property key="AutoSelectMemRanges" value="auto"/>
         <property key="Freeze Peripherals" value="true"/>
@@ -166,10 +143,8 @@
         <property key="programoptions.preserveuserid" value="false"/>
         <property key="programoptions.usehighvoltageonmclr" value="false"/>
         <property key="programoptions.uselvpprogramming" value="false"/>
-        <property key="voltagevalue" value="3.5"/>
+        <property key="voltagevalue" value="5.0"/>
       </PICkit3PlatformTool>
-      <XC8-config-global>
-      </XC8-config-global>
     </conf>
   </confs>
 </configurationDescriptor>

@@ -48,6 +48,15 @@
 #include "HardwareProfile.h"
 #include "./USB/usb_function_hid.h"
 
+void maintainPWM();
+void setupPWM();
+void setFreqValues(unsigned short milliseconds, unsigned char cycle);
+
+
+
+
+
+
 
 /** CONFIGURATION **************************************************/
 #if defined(PICDEM_FS_USB)      // Configuration bits for PICDEM FS USB Demo Board (based on PIC18F4550)
@@ -365,13 +374,12 @@ typedef union _OUTPUT_DATA
 {
     
 
-    BYTE val;
-    
+    BYTE val[2];
 
     struct
     {
-        BYTE firstBit: 1;
-        BYTE :7; //Filler
+        BYTE period;
+        BYTE value;
     } members;
 } OUTPUT_DATA;
 
@@ -596,6 +604,58 @@ BYTE hid_report[8] HID_REPORT_ADDRESS_TAG;
 #pragma code
 #endif
 
+const long actualFreq = (48000000L/256)/4;
+long periodFreq;
+long activeFreq;
+
+
+void setFreqValues(unsigned short milliseconds, unsigned char cycle)
+{
+    periodFreq = actualFreq*  milliseconds/1000;
+    activeFreq = periodFreq * cycle/256;
+}
+
+
+void maintainPWM()
+{
+    unsigned short lowByte = TMR0L;
+    unsigned short highByte = TMR0H;
+
+    unsigned int realValue =  (highByte << 8) + lowByte;
+
+    if ( realValue  >= periodFreq)
+    {
+        TMR0H = 0;
+        TMR0L = 0;
+        
+    }
+
+    if (realValue < activeFreq)
+    {
+        PORTAbits.RA6 = 1;
+    }
+    else
+        PORTAbits.RA6 = 0;
+    
+
+}
+
+void setupPWM()
+{
+    TRISAbits.TRISA6 = 0;
+
+    T0CONbits.TMR0ON = 0;
+    T0CONbits.T08BIT = 0;
+    T0CONbits.T0CS = 0;
+    T0CONbits.PSA = 0;
+    T0CONbits.T0PS = 0b111;
+    T0CONbits.TMR0ON = 1;
+    PORTAbits.RA6 = 0;
+
+    setFreqValues(1000,0);
+}
+
+
 /********************************************************************
  * Function:        void main(void)
  *
@@ -644,7 +704,8 @@ int main(void)
 
 		// Application-specific tasks.
 		// Application related code may be added here, or in the ProcessIO() function.
-        ProcessIO();        
+        ProcessIO();
+        maintainPWM();
     }//end while
 }//end main
 
@@ -914,6 +975,7 @@ void UserInit(void)
 
 
     mInitPOT();
+    setupPWM();
     lastTransmission = 0;
 
 }//end UserInit
@@ -988,8 +1050,9 @@ void Joystick(void)
 
     if (!HIDRxHandleBusy(lastRecieve))
     {
-        wasGiven = joystick_output.val;
+        setFreqValues(joystick_output.members.period,joystick_output.members.value);
         lol = !lol;
+
         lastRecieve = HIDRxPacket(HID_EP, (BYTE*)&joystick_output, sizeof(joystick_output));
 
     }
@@ -1005,7 +1068,7 @@ void Joystick(void)
             joystick_input.members.buttons.x = 1;
             joystick_input.members.buttons.square = lol;
             joystick_input.members.buttons.o = 0;
-            joystick_input.members.buttons.triangle = 0;
+            joystick_input.members.buttons.triangle = 1;
             joystick_input.members.buttons.L1 = 0;
             joystick_input.members.buttons.R1 = 0;
             joystick_input.members.buttons.L2 = 0;
